@@ -22,7 +22,7 @@ async function testApi() {
       console.log(`Data for temperature ${temp}:`, tempResponse.data);
     }
 
-    const humidities = [47, 50, 60];
+    const humidities = [47, 49, 50, 60];
     for (const humidity of humidities) {
       console.log(`Testing /filter/humid/${humidity}`);
       const humidityResponse = await axios.get(`${BASE_URL}/filter/humid/${humidity}`);

@@ -1,7 +1,8 @@
 import { Hono } from 'hono';
 import { fetchDataFromFirebase } from '../utils/fetchData';
 import { getFilteredData } from '../utils/filterData';
-import { hasHighTemperature, hasHighHumidity, alertData } from '../utils/alertData'; 
+import { hasHighTemperature, hasHighHumidity, sendCombinedAlerts, AlertData } from '../utils/alertData'; 
+import { getTargetGroupId } from '../utils/whatsappGateway'; // Make sure the path is correct
 
 const sensorRoutes = new Hono();
 
@@ -24,6 +25,7 @@ sensorRoutes.get('/filter/temp/:temp', async (c) => {
   return c.json(filteredData);
 });
 
+// Filter sensor data by humidity
 sensorRoutes.get('/filter/humid/:humidity', async (c) => {
   const { humidity } = c.req.param();
   const data = await fetchDataFromFirebase();
@@ -31,21 +33,32 @@ sensorRoutes.get('/filter/humid/:humidity', async (c) => {
   return c.json(filteredData);
 });
 
-
 sensorRoutes.get('/check/high-temperature', async (c) => {
-    const data: alertData[] = await fetchDataFromFirebase();
+    const data: AlertData[] = await fetchDataFromFirebase();
     const hasHighTemp = hasHighTemperature(data);
+    
+    const targetGroupId = await getTargetGroupId();
+    
+    if (hasHighTemp.length > 0 && targetGroupId) {
+      await sendCombinedAlerts(data, targetGroupId); // Send alerts using group ID
+    }
+  
     return c.json({ hasHighTemperature: hasHighTemp });
   });
   
+  // Check for high humidity and send alerts
   sensorRoutes.get('/check/high-humidity', async (c) => {
-    const data: alertData[] = await fetchDataFromFirebase();
+    const data: AlertData[] = await fetchDataFromFirebase();
     const hasHighHum = hasHighHumidity(data);
+    
+    const targetGroupId = await getTargetGroupId();
+    
+    if (hasHighHum.length > 0 && targetGroupId) {
+      await sendCombinedAlerts(data, targetGroupId); // Send alerts using group ID
+    }
+  
     return c.json({ hasHighHumidity: hasHighHum });
   });
-
-  
-
-
+    
 
 export default sensorRoutes;

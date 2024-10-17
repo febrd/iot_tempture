@@ -3,6 +3,7 @@ interface SensorData {
   humidity: string;
   timestamp: string;
 }
+
 export function getFilteredData(
   data: SensorData[],
   range: string = 'realtime',
