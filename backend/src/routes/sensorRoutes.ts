@@ -1,10 +1,25 @@
-import { Hono } from 'hono';
+import { Hono, Context, Next } from 'hono'; 
 import { fetchDataFromFirebase } from '../utils/fetchData';
 import { getFilteredData } from '../utils/filterData';
 import { hasHighTemperature, hasHighHumidity, sendCombinedAlerts, AlertData } from '../utils/alertData'; 
-import { getTargetGroupId } from '../utils/whatsappGateway'; // Make sure the path is correct
+import { getTargetGroupId } from '../utils/whatsappGateway'; 
 
 const sensorRoutes = new Hono();
+
+const corsMiddleware = async (c: Context, next: Next) => {
+  c.res.headers.append('Access-Control-Allow-Origin', 'http://localhost:3001'); // Replace with your frontend URL
+  c.res.headers.append('Access-Control-Allow-Methods', 'GET, OPTIONS'); // Add any other methods you need
+  c.res.headers.append('Access-Control-Allow-Headers', 'Content-Type'); // Add any other headers you need
+
+  if (c.req.method === 'OPTIONS') {
+    return c.text('OK', 204);
+  }
+
+  await next();
+};
+
+// Use the CORS middleware
+sensorRoutes.use(corsMiddleware);
 
 sensorRoutes.get('/all', async (c) => {
   const data = await fetchDataFromFirebase();
@@ -25,7 +40,6 @@ sensorRoutes.get('/filter/temp/:temp', async (c) => {
   return c.json(filteredData);
 });
 
-// Filter sensor data by humidity
 sensorRoutes.get('/filter/humid/:humidity', async (c) => {
   const { humidity } = c.req.param();
   const data = await fetchDataFromFirebase();
@@ -34,31 +48,29 @@ sensorRoutes.get('/filter/humid/:humidity', async (c) => {
 });
 
 sensorRoutes.get('/check/high-temperature', async (c) => {
-    const data: AlertData[] = await fetchDataFromFirebase();
-    const hasHighTemp = hasHighTemperature(data);
-    
-    const targetGroupId = await getTargetGroupId();
-    
-    if (hasHighTemp.length > 0 && targetGroupId) {
-      await sendCombinedAlerts(data, targetGroupId); // Send alerts using group ID
-    }
+  const data: AlertData[] = await fetchDataFromFirebase();
+  const hasHighTemp = hasHighTemperature(data);
   
-    return c.json({ hasHighTemperature: hasHighTemp });
-  });
+  const targetGroupId = await getTargetGroupId();
   
-  // Check for high humidity and send alerts
-  sensorRoutes.get('/check/high-humidity', async (c) => {
-    const data: AlertData[] = await fetchDataFromFirebase();
-    const hasHighHum = hasHighHumidity(data);
-    
-    const targetGroupId = await getTargetGroupId();
-    
-    if (hasHighHum.length > 0 && targetGroupId) {
-      await sendCombinedAlerts(data, targetGroupId); // Send alerts using group ID
-    }
+  if (hasHighTemp.length > 0 && targetGroupId) {
+    await sendCombinedAlerts(data, targetGroupId); 
+  }
+
+  return c.json({ hasHighTemperature: hasHighTemp });
+});
+
+sensorRoutes.get('/check/high-humidity', async (c) => {
+  const data: AlertData[] = await fetchDataFromFirebase();
+  const hasHighHum = hasHighHumidity(data);
   
-    return c.json({ hasHighHumidity: hasHighHum });
-  });
-    
+  const targetGroupId = await getTargetGroupId();
+  
+  if (hasHighHum.length > 0 && targetGroupId) {
+    await sendCombinedAlerts(data, targetGroupId); // Send alerts using group ID
+  }
+
+  return c.json({ hasHighHumidity: hasHighHum });
+});
 
 export default sensorRoutes;
