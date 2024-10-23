@@ -5,3 +5,5 @@ export async function fetchDataFromFirebase() {
     return data;
   }
   
+
+  

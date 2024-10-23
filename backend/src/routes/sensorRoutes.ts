@@ -7,9 +7,9 @@ import { getTargetGroupId } from '../utils/whatsappGateway';
 const sensorRoutes = new Hono();
 
 const corsMiddleware = async (c: Context, next: Next) => {
-  c.res.headers.append('Access-Control-Allow-Origin', 'http://localhost:3001'); // Replace with your frontend URL
-  c.res.headers.append('Access-Control-Allow-Methods', 'GET, OPTIONS'); // Add any other methods you need
-  c.res.headers.append('Access-Control-Allow-Headers', 'Content-Type'); // Add any other headers you need
+  c.res.headers.append('Access-Control-Allow-Origin', 'http://localhost:3001'); 
+  c.res.headers.append('Access-Control-Allow-Methods', 'GET, OPTIONS'); 
+  c.res.headers.append('Access-Control-Allow-Headers', 'Content-Type');
 
   if (c.req.method === 'OPTIONS') {
     return c.text('OK', 204);
@@ -18,7 +18,6 @@ const corsMiddleware = async (c: Context, next: Next) => {
   await next();
 };
 
-// Use the CORS middleware
 sensorRoutes.use(corsMiddleware);
 
 sensorRoutes.get('/all', async (c) => {
