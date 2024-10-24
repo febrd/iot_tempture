@@ -11,7 +11,9 @@ docsRoutes.get('/', (c) => {
       'GET /api/sensor/filter/temp/:temp': 'Ambil data sensor dengan suhu tertentu.',
       'GET /api/sensor/filter/humid/:humidity': 'Ambil data sensor dengan kelembapan tertentu.',
       'GET /api/sensor/check/high-temperature': 'Periksa apakah ada suhu di atas 40 derajat.',
-      'GET /api/sensor/check/high-humidity': 'Periksa apakah ada kelembapan di atas 45 persen.'
+      'GET /api/sensor/check/high-humidity': 'Periksa apakah ada kelembapan di atas 45 persen.',
+      'GET /api/data/chart': ':apiKey [:params] Ambil Data Chart',
+
     }
   });
 });
